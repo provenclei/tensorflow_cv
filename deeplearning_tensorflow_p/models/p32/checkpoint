@@ -1,0 +1,2 @@
+model_checkpoint_path: "sin"
+all_model_checkpoint_paths: "sin"
