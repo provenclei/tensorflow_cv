@@ -101,7 +101,7 @@ class ResNet:
             left = _my_conv(x, filters, 3, strides, 'same', name='res_%d_%d_left_myconv1' % (num_i, i),
                             training=training)
             left = _my_conv(left, filters, 3, 1, 'same', name='res_%d_%d_left_myconv2' % (num_i, i),
-                            training=training, active=False)
+                            training=training)
         if i == 0:
             if self.bottleneck:
                 filters *= 4
