@@ -55,14 +55,13 @@ class TransposeResNet:
             filters = 2048 if self.bottleneck else 512
             # [-1, 2048] 或 [-1, 512]
             x = tf.layers.dense(x, filters, name='fc', activation=tf.nn.relu)
-            # [-1, -1, -1, 2048] 或 [-1, -1, -1, 512]
+            # [-1, 1, 1, 2048] 或 [-1, 1, 1, 512]
             x = tf.reshape(x, [-1, 1, 1, filters])
             # [-1, 7, 7, 2048] 或 [-1, 7, 7, 512]
-            x = tf.layers.conv2d_transpose(x, filters, (height // 32, width // 32), 1, 'same',
+            x = tf.layers.conv2d_transpose(x, filters, (height // 32, width // 32), 1,
                                            name='deconv1', activation=tf.nn.relu)
             # -> [-1, 56, 56, 64]
             x = self._repeat(x, training)
-
             # 池化对应操作为反卷积
             # x: [-1, 56, 56, 64]  -> [-1, 112, 112, 64]
             x = tf.layers.conv2d_transpose(x, 64, 3, 2, 'same', name='decov2', activation=tf.nn.relu)
@@ -123,7 +122,7 @@ def _check(size):
 
 
 def main():
-    net = TransposeResNet(RESNET18)
+    net = TransposeResNet(RESNET50)
     # 调用 __call__ 函数
     x = net(tf.random_normal([20, 123]), 224, True)  # 使用 （）就可以调用魔法函数__call__'
     print(x.shape)

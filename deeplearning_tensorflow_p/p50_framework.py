@@ -215,6 +215,7 @@ class App:
         ts = self.ts
         writer = tf.summary.FileWriter(config.log_dir, self.session.graph)  # 唯一在训练中定义的对象
         batches = ds_train.num_examples // (config.batch_size * config.gpus)
+        make_dirs(config.save_path)
         for epoch in range(config.epoches):
             self.before_epoch(epoch)
             for batch in range(batches):

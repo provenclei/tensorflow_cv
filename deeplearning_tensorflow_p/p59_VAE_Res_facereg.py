@@ -7,21 +7,16 @@
 @Description    :  
 @CreateTime     :  2020/6/23 10:15
 ------------------------------------
-@ModifyTime     :  手写数字生成
-
-如何计算标准差？
-1. 使用惯性系数
-2. 将方差公式展开后得：二阶中心距减去均值的平方
+@ModifyTime     :  使用 ResNet + 结伴损失 进行 VAE 人脸识别
 
 """
 import p50_framework as myf
 import p59_VAE_facereg as face
+
 import p56_ResNet as resnet
 import p58_transpose_ResNet as deresnet
 
 import tensorflow as tf
-import numpy as np
-import cv2
 
 
 class MyConfig(face.MyConfig):
@@ -36,13 +31,13 @@ class MySubTensors(face.MySubTensors):
 
     def get_loss(self, x):
         loss1 = tf.reduce_mean(tf.abs(self.y - x))
-        # x: [-1, img_size, img_size, 3]
-        # self.y: [-1, img_size, img_size, 3]
+        # x: [-1, h, w, 3]
+        # self.y: [-1, h, w, 3]
         length = tf.shape(self.y)[0] // 2
         y1 = self.y[: length, :, :, :]
         y2 = self.y[length:, :, :, :]
-        x1 = self.x[: length, :, :, :]
-        x2 = self.x[length:, :, :, :]
+        x1 = x[: length, :, :, :]
+        x2 = x[length:, :, :, :]
 
         loss2 = tf.reduce_mean(tf.abs(y1 - y2 - (x1 - x2)))
         loss = loss1 * 2 + loss2
@@ -56,7 +51,7 @@ class MySubTensors(face.MySubTensors):
         :return: the semantics vectors which shape is [-1, vec_size]
         '''
         net = resnet.ResNet(resnet.RESNET50)
-        # 测试时也会更新
+        # 测试时也会更新，多个GPU共享resnet, 所以必须添加name
         logits = net(x, vec_size, False, 'resnet')  # logits: [-1, vec_size]
         return logits
 
@@ -68,7 +63,7 @@ class MySubTensors(face.MySubTensors):
         :return: [-1, img_size, img_size, 3]
         '''
         net = deresnet.TransposeResNet(deresnet.RESNET50)
-        y = net(vec, self.config.img_size, False, 'deresnet')  # [-1, img_size, img_size, 3]
+        y = net(vec, self.config.img_size, False, 'deresnet')  # [-1, h, w, 3]
         return y
 
 

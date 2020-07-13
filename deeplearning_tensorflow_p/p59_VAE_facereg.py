@@ -81,12 +81,13 @@ class MySubTensors:
         self.process_normal(self.vec)  # 注意次序！！！
         # [-1, img_size, img_size, 3]
         self.y = self.decode(self.vec)
-
-        self.get_loss(x)
+        print('x.shape: ', x.shape, 'y.shape: ', self.y.shape)
+        loss = self.get_loss(x)
+        self.losses = [loss]
 
     def get_loss(self, x):
         loss = tf.reduce_mean(tf.square(self.y - x))
-        self.losses = [loss]
+        return loss
 
     def process_normal(self, vec):
         '''
