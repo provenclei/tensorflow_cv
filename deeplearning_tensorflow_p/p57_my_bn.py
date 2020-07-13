@@ -48,13 +48,27 @@ import tensorflow as tf
 _name_id = 1
 
 
-def my_bn(x, axis, training, momentum=0.99, epslon=1e-6, name=None):
+def my_bn(x, axis, training=True, momentum=0.99, epslon=1e-6, name=None):
+    '''
+    batch normalization
+    :param x:
+    :param axis:
+    :param training: 张量
+    :param momentum:
+    :param epslon:
+    :param name:
+    :return:
+    '''
     assert len(x.shape) == 4
+
+    if type(training) == bool:
+        training = tf.constant(training)
 
     if name is None:
         global _name_id
         name = 'my_bn_%d' % _name_id
         _name_id += 1
+
     with tf.variable_scope(name):
         if type(axis) == int:
             axis = [axis]
@@ -73,8 +87,10 @@ def my_bn(x, axis, training, momentum=0.99, epslon=1e-6, name=None):
         # [1, 224, 224, 1]
         msd = tf.reshape(msd, shape)
 
-        final_mean = tf.get_variable(name='fm', shape=shape, type=tf.float64, trainable=False)
-        final_msd = tf.get_variable(name='fmsd', shape=shape, type=tf.float64, trainable=False)
+        # final_mean = tf.get_variable(name='fm', shape=shape, dtype=tf.float64, trainable=False)
+        # final_msd = tf.get_variable(name='fmsd', shape=shape, dtype=tf.float64, trainable=False)
+        final_mean = tf.get_variable('fm', shape, tf.float32, trainable=False)
+        final_msd = tf.get_variable('fmsd', shape, tf.float32, trainable=False)
 
         assign_mean = tf.assign(final_mean, momentum * final_mean + (1 - momentum) * mean)
         assign_msd = tf.assign(final_msd, momentum * final_msd + (1 - momentum) * msd)
@@ -83,8 +99,12 @@ def my_bn(x, axis, training, momentum=0.99, epslon=1e-6, name=None):
         tf.add_to_collection(tf.GraphKeys.UPDATE_OPS, assign_msd)
 
         std = tf.maximum(final_msd - tf.square(final_mean), epslon)
-        assign_std = tf.maximum(assign_msd - tf.square(assign_mean, epslon))
-        x = tf.cond(training, lambda: (x - assign_mean) / assign_std, lambda : (x - final_mean) / std)
+        assign_std = tf.maximum(assign_msd - tf.square(assign_mean), epslon)
+        # 问题：这一轮的变量 final_mean 和 final_msd 是上一轮，应该使用 assign_mean 和 assign_std
+        # 但是 assign_mean 和 assign_std 是assign，无法获取，所以使用 cond 函数
+        # `true_fn` and `false_fn` both return lists of output tensors.
+        # `true_fn` and `false_fn` must have the same non-zero number and type of outputs.
+        x = tf.cond(training, lambda: (x - assign_mean) / assign_std, lambda: (x - final_mean) / std)
         return x
 
 

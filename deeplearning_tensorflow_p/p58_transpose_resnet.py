@@ -32,7 +32,7 @@ SETTING = {
 _name_id = 1
 
 
-class ResNet:
+class TransposeResNet:
     def __init__(self, name):
         self.bottleneck = SETTING[name]['bottleneck']
         self.repeats = SETTING[name]['repeats']
