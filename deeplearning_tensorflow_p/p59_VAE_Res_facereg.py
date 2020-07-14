@@ -26,6 +26,13 @@ class MyConfig(face.MyConfig):
     def get_sub_tensors(self, gpu_idx):
         return MySubTensors(self)
 
+    def get_tensors(self):
+        '''
+        重写方法，避免汇总损失的时候开根号
+        :return:
+        '''
+        return myf.Tensors()
+
 
 class MySubTensors(face.MySubTensors):
 
@@ -40,7 +47,7 @@ class MySubTensors(face.MySubTensors):
         x2 = x[length:, :, :, :]
 
         loss2 = tf.reduce_mean(tf.abs(y1 - y2 - (x1 - x2)))
-        loss = loss1 * 2 + loss2
+        loss = loss1 * (2/3) + loss2 (1/3)
         return loss
 
     def encode(self, x, vec_size):
