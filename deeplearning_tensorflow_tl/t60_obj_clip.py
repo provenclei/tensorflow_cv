@@ -7,7 +7,7 @@
 @Description    :  
 @CreateTime     :  2020/7/14 14:04
 ------------------------------------
-@ModifyTime     :  
+@ModifyTime     :  图像裁剪，图像语义分割
 """
 import numpy as np
 

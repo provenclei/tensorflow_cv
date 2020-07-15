@@ -7,7 +7,7 @@
 @Description    :  
 @CreateTime     :  2020/7/12 14:55
 ------------------------------------
-@ModifyTime     :  
+@ModifyTime     :  实现 Batch Normalization
 """
 import tensorflow as tf
 
