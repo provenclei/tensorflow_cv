@@ -12,13 +12,9 @@
 import tensorflow as tf
 import numpy as np
 
-from TF_turial.deeplearning_tensorflow_p.p45_celeba import CelebA
-from TF_turial.deeplearning_tensorflow_p.p48_BufferDS import BufferDS
-import TF_turial.deeplearning_tensorflow_p.p50_framework as myf
-
-# from p45_celeba import CelebA
-# from p48_BufferDS import BufferDS
-# import p50_framework as myf
+from p45_celeba import CelebA
+from p48_BufferDS import BufferDS
+import p50_framework as myf
 
 # img_size: 218, 178
 

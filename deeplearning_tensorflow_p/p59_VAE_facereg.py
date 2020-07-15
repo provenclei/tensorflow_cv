@@ -9,10 +9,6 @@
 ------------------------------------
 @ModifyTime     :  手写数字生成
 
-如何计算标准差？
-1. 使用惯性系数
-2. 将方差公式展开后得：二阶中心距减去均值的平方
-
 """
 import p50_framework as myf
 from p45_celeba import CelebA

@@ -151,9 +151,26 @@ def main():
     x = net(tf.random_normal([20, 32 * 7, 32 * 7, 3]), 100, True)  # 使用 （）就可以调用魔法函数__call__'
     print(x.shape)
 
-    net = ResNet(RESNET101)
-    x = net(tf.random_normal([20, 32 * 7, 32 * 7, 3]), 100, True)  # 使用 （）就可以调用魔法函数__call__'
-    print(x.shape)
+    # net = ResNet(RESNET101)
+    # x = net(tf.random_normal([20, 32 * 7, 32 * 7, 3]), 100, True)  # 使用 （）就可以调用魔法函数__call__'
+    # print(x.shape)
+
+    def _count(ps):
+        result = 1
+        for p in ps:
+            result *= p.value
+        return result
+
+    # import functools
+    # functools.reduce()
+
+    total = 0
+    # 计算训练参数的个数
+    for var in tf.trainable_variables():
+        vars = _count(var.shape)
+        total += vars
+        print(var.name, var.shape, vars)
+    print('total', total)
 
 
 if __name__ == '__main__':
