@@ -40,7 +40,7 @@ class MyConfig(myf.Config):
         return MySubTensors(self)
 
     def get_app(self):
-        return MyApp()
+        return MyApp(self)
 
     def get_ds_train(self):
         return self.ds
@@ -83,7 +83,6 @@ class MySubTensors:
             filters *= 2
             size //= 2
             x = tf.layers.conv2d(x, filters, 3, 2, 'same', activation=tf.nn.relu, name='conv2_%d'%i)
-
         return tf.layers.flatten(x)
 
 
@@ -115,21 +114,7 @@ class MyApp(myf.App):
 
 
 def main():
-    path_img = '/Users/tenglei/Downloads/face_identity/img/img_ali.gn_cel.eba.zip'
-    path_an = '/Users/tenglei/Downloads/face_identity/Anno/identity_CelebA.txt'
-    path_bbox = '/Users/tenglei/Downloads/face_identity/Anno/list_bbox_celeba.txt'
-    celeba = CelebA(path_img, path_an, path_bbox)
-    cfg = MyConfig(celeba.persons)
-    app = MyApp(cfg)
-
-    ds = BufferDS(cfg.buffer_size, cfg.batch_size)
-    cfg.ds = ds
-
-    # cfg.from_cmd()
-    with app:
-        ds = BufferDS(cfg.buffer_size, celeba, cfg.batch_size)
-        app.train(ds, ds)
-        predict(app)
+    pass
 
 
 if __name__ == '__main__':

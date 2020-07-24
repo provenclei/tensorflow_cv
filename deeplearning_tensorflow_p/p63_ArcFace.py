@@ -7,7 +7,7 @@
 @Description    :  
 @CreateTime     :  2020/7/16 09:44
 ------------------------------------
-@ModifyTime     :  
+@ModifyTime     :  人脸对比
 """
 import tensorflow as tf
 from p45_celeba import CelebA
@@ -37,7 +37,7 @@ class MySubTensors(p63.MySubTensors):
     def get_logits(self, vector):
         # [-1, vec_size]
         vector = tf.nn.l2_normalize(vector, axis=1)
-        w = tf.get_variable('std_vector', [vector.shape[-1].value, self.config.persons], tf.float64)
+        w = tf.get_variable('std_vector', [vector.shape[-1].value, self.config.persons], tf.float32)
         w = tf.nn.l2_normalize(w, axis=0)
         logits = tf.matmul(vector, w)  # [-1, persons]
         return logits * self.config.scale
@@ -49,12 +49,11 @@ def main():
     path_bbox = '/Users/tenglei/Downloads/face_identity/Anno/list_bbox_celeba.txt'
     celeba = CelebA(path_img, path_an, path_bbox)
     cfg = MyConfig(celeba.persons)
-    app = MyApp(cfg)
 
-    ds = BufferDS(cfg.buffer_size, cfg.batch_size)
+    ds = BufferDS(cfg.buffer_size, celeba, cfg.batch_size)
     cfg.ds = ds
 
-    # cfg.from_cmd()
+    cfg.from_cmd()
 
 
 if __name__ == '__main__':
