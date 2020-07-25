@@ -66,7 +66,7 @@ class Cell:
         # xi: [-1]
         # statei: [-1, state_size]
         xi = tf.reshape(xi, [-1, 1])
-        # [-1, state_size+1]
+        # [-1, state_size + 1]
         x = tf.concat((xi, statei), axis=1)
         x = tf.layers.dense(x, 400, name='dense', activation=tf.nn.relu)
         state = tf.layers.dense(x, statei.shape[-1].value, name='dense2')
