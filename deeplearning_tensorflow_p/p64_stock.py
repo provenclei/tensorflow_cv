@@ -7,7 +7,7 @@
 @Description    :  
 @CreateTime     :  2020/7/16 11:09
 ------------------------------------
-@ModifyTime     :  rnn
+@ModifyTime     :  rnn 股票预测
 """
 import p50_framework as myf
 import tensorflow as tf
@@ -17,7 +17,7 @@ import numpy as np
 class MyConfig(myf.Config):
     def __init__(self):
         super(MyConfig, self).__init__()
-        self.num_steps = 10
+        self.num_steps = 10  # 参考前几天的股票
         self.stocks = 8
         self.batch_size = 1
         self.days = 300
@@ -36,7 +36,7 @@ class MyConfig(myf.Config):
         return 'p64'
 
 
-class MySubTensors():
+class MySubTensors:
     def __init__(self, config: MyConfig):
         x = tf.placeholder(tf.float32, [None, config.num_steps])
         y = tf.placeholder(tf.float32, [None])
@@ -77,8 +77,10 @@ class MyDS:
         数据
         :param stacks: 股票个数
         :param days: 天数
+        :param steps: 循环次数，也就是参考天数
         '''
         self.data = np.random.normal(size=[stacks, days])  # 伪随机数造成损失在下降
+        # 每10天算一个样本，如果1-100天，则共有91个样本，由于使用前十个样本预测下一个，所以取90个样本
         self.num_examples = days - steps
         self.pos = np.random.randint(0, self.num_examples)
         self.steps = steps
