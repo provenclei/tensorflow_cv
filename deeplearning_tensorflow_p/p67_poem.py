@@ -7,7 +7,7 @@
 @Description    :  
 @CreateTime     :  2020/7/25 18:55
 ------------------------------------
-@ModifyTime     :  
+@ModifyTime     :  诗歌生成
 """
 import p50_framework as myf
 from p48_BufferDS import BufferDS

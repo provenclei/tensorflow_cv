@@ -45,7 +45,7 @@ class QTS:
             result.extend(self.poems[:next])
         # result: [batch_szie, 32]
         self.pos = next
-        return result
+        return [result]
 
     def read_poem(self, poem):
         for ch in poem:
