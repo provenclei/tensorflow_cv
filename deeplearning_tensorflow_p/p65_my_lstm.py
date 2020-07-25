@@ -19,7 +19,9 @@ class MyLSTMCell:
     def __call__(self, *args, **kwargs):
         pass
 
-    def zero_
+    def zero_state(self, batch_size, dtype):
+        pass
+
 
 def main():
     pass

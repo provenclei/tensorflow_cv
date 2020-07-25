@@ -38,12 +38,14 @@ class MyConfig(myf.Config):
 
 class MySubTensors:
     def __init__(self, config: MyConfig):
+        self.config = config
         x = tf.placeholder(tf.float32, [None, config.num_steps])
         y = tf.placeholder(tf.float32, [None])
         self.inputs = [x, y]
 
-        cell = Cell()
-        state = tf.zeros([tf.shape(x)[0], config.state_size])
+        cell = Cell(config.state_size)
+        # 将 cell 进行初始化
+        state = cell.zero_state(tf.shape(x)[0], x.dtype)
         with tf.variable_scope('my_cell') as scope:
             for i in range(config.num_steps):
                 # state: [-1, state_size]
@@ -57,8 +59,8 @@ class MySubTensors:
 
 
 class Cell:
-    def __init__(self):
-        pass
+    def __init__(self, num_units):
+        self.num_units = num_units
 
     def __call__(self, xi, statei):
         # xi: [-1]
@@ -69,6 +71,9 @@ class Cell:
         x = tf.layers.dense(x, 400, name='dense', activation=tf.nn.relu)
         state = tf.layers.dense(x, statei.shape[-1].value, name='dense2')
         return None, state
+
+    def zero_state(self, batch_size, dtype):
+        return tf.zeros([batch_size, self.num_units], dtype)
 
 
 class MyDS:
