@@ -60,7 +60,8 @@ class Config:
             value = attrs[attr]
             t = type(value)
             if t == bool:
-                parser.add_argument('--' + attr, default=value, action='store_%s' % ('false' if value else 'true'), help='Default to %s' % value)
+                parser.add_argument('--' + attr, default=value, action='store_%s' % ('false' if value else 'true'),
+                                    help='Default to %s' % value)
             else:
                 parser.add_argument('--' + attr, type=t, default=value, help='Default to %s' % value)
         parser.add_argument('--call', type=str, default='train', help='call method, by default call train()')

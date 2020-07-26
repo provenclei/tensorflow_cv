@@ -7,16 +7,16 @@
 @Description    :  
 @CreateTime     :  2020/7/25 18:55
 ------------------------------------
-@ModifyTime     :  诗词
+@ModifyTime     :  诗词数据处理
 """
 import numpy as np
 
 
 class QTS:
     def __init__(self, path):
-        # 查找每个汉字编码
+        # 查找每个汉字编码，char_to_id
         self.dictionary = {}
-        # 排序
+        # 排序 id_to_char
         self.chars = []
         with open(path) as file:
             lines = file.readlines()
@@ -48,6 +48,11 @@ class QTS:
         return [result]
 
     def read_poem(self, poem):
+        '''
+        将诗歌添加到列表和字典中
+        :param poem:
+        :return:
+        '''
         for ch in poem:
             if ch not in self.dictionary:
                 id = len(self.chars)
@@ -55,14 +60,28 @@ class QTS:
                 self.chars.append(ch)
 
     def get_num_chars(self):
+        '''
+        获取字符个数
+        :return:
+        '''
         return len(self.chars)
 
     def get_chars(self, *ids):
+        '''
+        根据 id 找字符
+        :param ids:
+        :return:
+        '''
         result = [self.chars[id] for id in ids]
         # 列表转字符串
         return ''.join(result)
 
     def get_ids(self, s):
+        '''
+        根据字符找 id
+        :param s:
+        :return:
+        '''
         return [self.dictionary[ch] for ch in s]
 
 
@@ -80,6 +99,6 @@ if __name__ == '__main__':
 
     print(qts.get_ids(c))
 
-    a = qts.next_batch(1)[0]
-    print(qts.get_chars(*a))
+    a = qts.next_batch(2)[0]
+    print(qts.get_chars(*a[0]))
 

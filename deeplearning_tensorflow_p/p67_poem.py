@@ -30,6 +30,10 @@ class MyConfig(myf.Config):
         self.batch_size = 100
 
     def ds(self):
+        '''
+        去获取 bufferds 对象
+        :return:
+        '''
         self.make_ds()
         return self._ds
 
@@ -37,6 +41,7 @@ class MyConfig(myf.Config):
         if self._ds is None:
             qts = QTS(self.qts_path)
             self._ds = BufferDS(1000, qts, self.batch_size)
+            # 中文字符的个数
             self._num_chinese_chars = qts.get_num_chars()
 
     def num_chinese_chars(self):
@@ -78,6 +83,8 @@ class MySubTensors:
                 y_predict.append(logits)
 
                 if i < cfg.num_steps - 1:
+                    # 32 个输出
+                    # 让当前的 logits 与下一次的输入计算交叉熵
                     loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=x[:, i+1, :], logits=logits)
                     losses.append(loss)
                 scope.reuse_variables()
