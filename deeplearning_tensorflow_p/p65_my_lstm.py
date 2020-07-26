@@ -16,6 +16,12 @@ name_id = 1
 
 class MyLSTMCell:
     def __init__(self, num_units, state_is_tuple=True, name=None):
+        '''
+        初始化
+        :param num_units: 中间状态的维度会根据输入的第一个维度确定，保证每一维都进行存储
+        :param state_is_tuple: 状态是否为元组
+        :param name:
+        '''
         self.num_units = num_units
         self.state_is_tuple = state_is_tuple
         if name is None:
@@ -25,8 +31,12 @@ class MyLSTMCell:
         self.name = name
 
     def __call__(self, inputs, state):
-        # inputs: [-1, num_units]
-        # state:  tuple of [-1, num_units]'s or [-1, 2*num_units]
+        '''
+        调用函数
+        :param inputs: [-1, num_units]
+        :param state: tuple of [-1, num_units]'s or [-1, 2*num_units]
+        :return:
+        '''
         with tf.variable_scope(self.name):
             units = self.num_units
             if self.state_is_tuple:
@@ -35,7 +45,7 @@ class MyLSTMCell:
                 c = state[:, :units]
                 h = state[:, units:]
             inputs = tf.concat((inputs, h), axis=1)  # [-1, 2*num_units]
-            inputs = tf.layers.dense(inputs, 4 * units, name='dense1')  # [-1, 3*num_units]
+            inputs = tf.layers.dense(inputs, 4 * units, name='dense1')  # [-1, 4*num_units]
             gates = tf.nn.sigmoid(inputs[:3 * units])
             # 遗忘门
             gate_input = gates[:, 2 * units:]
@@ -49,6 +59,12 @@ class MyLSTMCell:
         return h, state
 
     def zero_state(self, batch_size, dtype):
+        '''
+        初始化：隐藏状态，上个神经元的输出，输入
+        :param batch_size:
+        :param dtype:
+        :return:
+        '''
         if self.state_is_tuple:
             zeros = tf.zeros([batch_size, self.num_units], dtype)
             return zeros, zeros
