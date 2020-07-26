@@ -71,7 +71,7 @@ class MySubTensors:
         cell1 = tf.nn.rnn_cell.LSTMCell(cfg.num_units, name='cell1', state_is_tuple=False)
         cell2 = tf.nn.rnn_cell.LSTMCell(cfg.num_units, name='cell2', state_is_tuple=False)
 
-        cell = tf.nn.MultiRNNCell([cell1, cell2], state_is_tuple=False)
+        cell = tf.nn.rnn_cell.MultiRNNCell([cell1, cell2], state_is_tuple=False)
         cell = tf.nn.rnn_cell.DropoutWrapper(cell, cfg.keep_prob)
 
         state = cell.zero_state(tf.shape(y)[0], y.dtype)
@@ -137,10 +137,10 @@ class MyApp(myf.App):
         precise = self.session.run(self.ts.sub_ts[-1].precise, fd)
         print('Epoch %d: precise = %.6f' % (epoch, precise))
 
-    def test1(self, ds):
+    def test(self, ds):
         qts = self.config.ds().ds
         chars = qts.get_num_chars()
-        # 随机生成
+        # 随机生成五首诗的第一个字
         xi = np.random.randint(0, chars, [5, 1])
         result = self._get_poems(xi)
         for i in range(len(result)):
@@ -148,13 +148,16 @@ class MyApp(myf.App):
 
     def _get_poems(self, x):
         '''
-        从定义的张量中获取诗歌
+        从定义的张量中获取诗歌，生成诗歌
+        对测试张量进行调用的过程
         :param x: 指定形状的张量
-        :return:
+        :return: [-1, num_steps]
         '''
         # xi: [-1, chars]
         x = np.array(x)
+        # 获取每首诗的前多少个字
         chars = np.shape(x)[1]
+        # 首个汉字，放入模型
         xi = x[:, 0]
         result = [xi]
         ts_ = self.ts.sub_ts[-1]
@@ -164,6 +167,7 @@ class MyApp(myf.App):
             fd = {ts_.xi: xi, ts_.state: state}
             xi, state = self.session.run([ts_.yi_predict, ts_.new_state], fd)  # [-1]
             if i < chars - 1:
+                # 将前 chars - 1 个字添加到 result 中
                 result.append(x[:, i+1])
             else:
                 result.append(xi)
@@ -178,7 +182,7 @@ class MyApp(myf.App):
         for i in range(len(result)):
             print(qts.get_chars(*list(result[i, :])))
 
-    def test(self, ds):
+    def test2(self, ds):
         while True:
             chars = input('> Please input Chinese chars such as "春", "中国":')
             if chars is None or len(chars) == 0:
