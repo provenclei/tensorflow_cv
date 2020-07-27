@@ -10,7 +10,7 @@
 @ModifyTime     :  一对多模型：图片生成标题的框架
 """
 import tensorflow as tf
-from p62_InceptionV3 import inception
+from p62_inception_v3 import inception
 
 
 class MySubTensors:

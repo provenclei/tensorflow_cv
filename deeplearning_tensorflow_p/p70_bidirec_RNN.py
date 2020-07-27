@@ -33,13 +33,15 @@ def bidirec_rnn(cell_l2r, cell_r2l, x, state_is_tuple=True, name=None):
         y_l2r = []
         y_r2l = []
         for i in range(num_steps):
-            yi_l2r, state_l2r = cell_l2r(x[:, i, :], state_l2r)
+            yi_l2r, state_l2r = cell_l2r(x[:, i, :], state_l2r)  # [-1, num_units]
             yi_r2l, state_r2l = cell_r2l(x[:, num_steps-1-i, :], state_r2l)
             y_l2r.append(yi_l2r)
+            # 插入到第一个位置，使其对应起来
             y_r2l.insert(0, yi_r2l)
 
+        # yi_l2r， yi_r2l -> [num_steps, -1, num_units]
         y = [yi_l2r + yi_r2l for yi_l2r, yi_r2l in zip(y_l2r, y_r2l)]  # [num_steps, -1, num_units]
-        y = tf.transpose(y, [1, 0, 2]) # [-1, num_steps, num_units]
+        y = tf.transpose(y, [1, 0, 2])  # [-1, num_steps, num_units]
         state = (state_l2r, state_r2l) if state_is_tuple else tf.concat((state_l2r, state_r2l), axis=1)
         return y, state
 
