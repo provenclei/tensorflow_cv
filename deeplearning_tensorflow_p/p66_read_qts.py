@@ -100,5 +100,7 @@ if __name__ == '__main__':
     print(qts.get_ids(c))
 
     a = qts.next_batch(2)[0]
-    print(qts.get_chars(*a[0]))
+    print(*a, len(a))
+    for i in range(0, len(a)):
+        print(qts.get_chars(*a[i]))
 
