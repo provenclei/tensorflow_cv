@@ -28,7 +28,8 @@ class MySubTensors:
         self.x = tf.placeholder(tf.int64, [None, cfg.num_steps1], 'x')   # 输入 [-1, num_steps1]
         self.y = tf.placeholder(tf.int64, [None, cfg.num_steps2], 'y')   # 标签
 
-        dict1 = tf.get_variable('dict1', [cfg.words1, cfg.num_units], tf.float64)  # 单词向量字典
+        # 可以换成已训练好的词向量字典
+        dict1 = tf.get_variable('dict1', [cfg.words1, cfg.num_units], tf.float64)  # 单词向量字典 [6000, 200]
         # 不可训练操作，不产生变量
         #  x: [-1, steps1, units]
         x = tf.nn.embedding_lookup(dict1, self.x)  # use word2vec instead of one-hot and dense

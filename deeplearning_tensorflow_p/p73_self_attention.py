@@ -7,7 +7,7 @@
 @Description    :  
 @CreateTime     :  2020/7/27 17:44
 ------------------------------------
-@ModifyTime     :  
+@ModifyTime     :  self-attention 实现
 """
 import tensorflow as tf
 
@@ -25,6 +25,7 @@ def self_attention(inputs, num_steps2: int, name=None):
 
     with tf.variable_scope(name):
         inputs = tf.transpose(inputs, [1, 0, 2])  # [-1, steps1, units]
+        # 不需要偏置和激活函数
         attention = tf.layers.dense(inputs, num_steps2, name='dense1', use_bias=False)  # [-1, steps1, steps2]
         attention = tf.nn.softmax(attention, axis=1)  # [-1, steps1, steps2]
 
