@@ -196,6 +196,7 @@ class Tensors:
 
                 values = [gs[i][0].values / gpus for gs in grads]  # [gpus, -1, 200]
                 values = tf.concat(values, axis=0)  # [-1, 200]
+                # indices 表示下标， 对下标没有梯度
                 indices = [gs[i][0].indices for gs in grads]  # [gpus, -1]
                 indices = tf.concat(indices, axis=0)  # [-1]
                 result.append((tf.IndexedSlices(values, indices), var))
@@ -210,8 +211,14 @@ class App:
         graph = tf.Graph()
         with graph.as_default():
             self.ts = config.get_tensors()
+
             cfg = tf.ConfigProto()
             cfg.allow_soft_placement = True
+            # 当使用GPU时候，Tensorflow运行自动慢慢达到最大GPU的内存
+            cfg.gpu_options.allow_growth = True
+            # 当使用GPU时，设置GPU内存使用最大比例
+            cfg.gpu_options.per_process_gpu_memory_fraction = 0.99
+
             self.session = tf.Session(config=cfg, graph=graph)
             self.saver = tf.train.Saver()
 
