@@ -170,20 +170,34 @@ class Tensors:
         self.train_ops = [opt.apply_gradients(gs) for gs in grads]
 
     def get_grads_mean(self, grads, loss_idx):
-        #  grads: [gups, losses]
+        '''
+        计算平均梯度
+        :param grads: [gups, losses]
+        :param loss_idx:
+        :return:
+        '''
         # 获取当前 loss 下的所有梯度
-        grads = [gs[loss_idx] for gs in grads]  # 第i个梯度 [gpus, vars, 2] 2:[grads, vars]
+        grads = [gs[loss_idx] for gs in grads]  # 第i个梯度 [gpus, vars, 2]    2:[grads, vars]
         gpus = len(grads)
 
+        # 获取变量列表
         vars = [pair[1] for pair in grads[0]]
         result = []
         for i, var in enumerate(vars):
+            # 获取梯度
             g = grads[0][i][0]  # 0号 gpu 当前的变量
             if isinstance(g, tf.IndexedSlices):
                 # 第一个 gpu 上是 IndexedSlices，其他 gpu 上均为 IndexedSlices
-                slices = [(v / gpus, i) for v, i in zip(gs[i][0].values, gs[i][0].indices) for gs in grads]
-                values = [v for v, _ in slices]
-                indices = [i for _, i in slices]
+
+                # 以下方法由于生成的是张量，无法更新
+                # slices = [(v / gpus, i) for v, i in zip(gs[i][0].values, gs[i][0].indices) for gs in grads]
+                # values = [v for v, _ in slices]
+                # indices = [i for _, i in slices]
+
+                values = [gs[i][0].values / gpus for gs in grads]  # [gpus, -1, 200]
+                values = tf.concat(values, axis=0)  # [-1, 200]
+                indices = [gs[i][0].indices for gs in grads]  # [gpus, -1]
+                indices = tf.concat(indices, axis=0)  # [-1]
                 result.append((tf.IndexedSlices(values, indices), var))
             else:
                 result.append((tf.reduce_mean([gs[i][0] for gs in grads], axis=0), var))
