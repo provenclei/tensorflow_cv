@@ -7,7 +7,7 @@
 @Description    :  
 @CreateTime     :  2020/7/27 14:01
 ------------------------------------
-@ModifyTime     :  使用framework
+@ModifyTime     :  使用 self-attention 和 framework
                 多对一模型：翻译模型(张量部分)
                 双层 LSTM
 """
@@ -51,7 +51,7 @@ class MyConfig(myf.Config):
 
 class MySubTensors:
     def __init__(self, cfg: MyConfig):
-        self.x = tf.placeholder(tf.int64, [None, cfg.num_steps1], 'x')
+        self.x = tf.placeholder(tf.int64, [None, cfg.num_steps1], 'x')  # [batch_size, num_step1]
         self.y = tf.placeholder(tf.int64, [None, cfg.num_steps2], 'y')
         self.inputs = [self.x, self.y]
 
@@ -64,11 +64,13 @@ class MySubTensors:
         # encode
         batch_size = tf.shape(self.x)[0]
         state = cell1.zero_state(batch_size, x.dtype)
-        enc_out = []
+        enc_out = []  # 保存进行 attention
         for i in range(cfg.num_steps1):
+            #  __call__: inputs, state   -> output, new_state
             out, state = cell1(x[:, i, :], state)
             enc_out.append(out)
         # enc_out: [steps1, -1, units]
+        # self-attention
         dec_ins = self_attention(enc_out, cfg.num_steps2, 'self_attention')  # [steps2, -1, units]
 
         # decode
@@ -78,6 +80,7 @@ class MySubTensors:
         loss = []
         y = tf.one_hot(self.y, cfg.words2)  # [-1, steps2, words2]
         for i in range(cfg.num_steps2):
+            #  __call__: inputs, state   -> output, new_state
             yi, state = cell2(dec_ins[i, :, :], state)  # [-1, units]
 
             logits = tf.layers.dense(yi, cfg.words2, name='dense1')  # [-1, words2]

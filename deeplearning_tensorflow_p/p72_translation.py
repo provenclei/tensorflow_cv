@@ -69,6 +69,7 @@ class MySubTensors:
 
         self.loss = tf.reduce_mean(loss)
         self.y_predict = tf.transpose(y_predict)  # [-1, steps2]
+        self.losses = [self.loss]
 
 
 if __name__ == '__main__':
