@@ -34,6 +34,23 @@ def self_attention(inputs, num_steps2: int, name=None):
         return tf.transpose(inputs, [2, 0, 1])  # [steps2, -1, units]
 
 
+def attention(input, query, type, name=None):
+    if name == None:
+        global name_id
+        name = 'self_attention_%d' % name_id
+        name_id += 1
+
+    with tf.variable_scope(name):
+        if type == 'self-attention':
+            pass
+        elif type == 'soft-attention':
+            pass
+        elif type == '':
+            pass
+        else:
+            pass
+
+
 if __name__ == '__main__':
     inputs = tf.random_normal([50, 123, 200])
     outputs = self_attention(inputs, 60)
