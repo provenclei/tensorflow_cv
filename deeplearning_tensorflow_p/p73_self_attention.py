@@ -35,6 +35,14 @@ def self_attention(inputs, num_steps2: int, name=None):
 
 
 def attention(input, query, type, name=None):
+    '''
+
+    :param input: [batch_size, num_steps]
+    :param query:
+    :param type:
+    :param name:
+    :return:
+    '''
     if name == None:
         global name_id
         name = 'self_attention_%d' % name_id

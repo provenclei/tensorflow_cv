@@ -104,7 +104,7 @@ class MySubTensors:
         x = tf.layers.flatten(x)
         x = tf.nn.dropout(x, self.cfg.keep_prob)
         x = tf.layers.dense(x, 1, name='dense')  # [-1, 1]
-        return x
+        return tf.nn.sigmoid(x)
 
     def gen(self, v):
         '''
@@ -128,6 +128,9 @@ class MySubTensors:
 class MyAPP(myf.App):
     def before_epoch(self, epoch):
         self.config.random_seed()
+
+    def after_batch(self, epoch, batch):
+        print(epoch, '-----', batch)
 
 
 class MyTensors(myf.Tensors):
