@@ -36,12 +36,12 @@ def self_attention(inputs, num_steps2: int, name=None):
 
 def attention(input, query, type, name=None):
     '''
-
-    :param input: [batch_size, num_steps]
-    :param query:
-    :param type:
+    注意力机制
+    :param input: [batch_size, num_steps, vec_size]
+    :param query: [vec_size, 1]
+    :param type: {'dot', 'scale dot-product', 'general', 'concat'}
     :param name:
-    :return:
+    :return: [batch_size, vec_size]
     '''
     if name == None:
         global name_id
@@ -49,14 +49,41 @@ def attention(input, query, type, name=None):
         name_id += 1
 
     with tf.variable_scope(name):
-        if type == 'self-attention':
+        key = tf.layers.dense(input, vec_size, name='dense1', use_bias=False)  # [batch_size, num_steps, vec_size]
+        value = key  # [batch_size, num_steps, vec_size]
+
+        # query: [vec_size, 1]
+        # key: [batch_size, num_steps, vec_size]
+        # value: [batch_size, num_steps, vec_size]
+        if type == 'dot':
+            score = tf.matmul(key, query)  # [-1, num_steps, 1]
+        elif type == 'scale dot-product':
+            score = tf.matmul(key, query)/tf.square(key.shape[-1])  # [-1, num_steps, 1]
+        elif type == 'general':
+            # 双线性插值  key * w * query
             pass
-        elif type == 'soft-attention':
-            pass
-        elif type == '':
-            pass
+        elif type == 'concat':
+            # v * tanh(concat(key, query))
+            q = tf.transport(query, [1, 0])
+            q = tf.reshape(q, [1, 1, q.shape[0].value])  # [1, 1, vec_size]
+            c = tf.concat(key, q, axis=2)  # [batch_size, num_steps, 2 * vec_size]
+            # [batch_size, num_steps, vec_size]
+            c = tf.layers.dense(c, vec_size, name='dense1', activation=tf.nn.tanh, use_bias=False)
+
+        elif type == 'add':
+            # v * tanh(key + query)
+            q = tf.transport(query, [1, 0])
+            q = tf.reshape(q, [1, 1, q.shape[0].value])  # [1, 1, vec_size]
+            c = key + q  # [batch_size, num_steps, vec_size]
+
         else:
-            pass
+            raise Exception('没有此类型')
+        # [-1, num_steps, 1]
+        s = tf.nn.softmax(score, axis=1)
+        v = tf.transpose(value, [0, 2, 1])  # [-1, vec_size, num_steps]
+        att = tf.matmul(s, v)  # [-1, vec_size, 1]
+        att = tf.reshape(att, [att.shape[0].value, att.shape[1].value])  # [-1, vec_size]
+        return att
 
 
 if __name__ == '__main__':
