@@ -218,7 +218,6 @@ class App:
             cfg.gpu_options.allow_growth = True
             # 当使用GPU时，设置GPU内存使用最大比例
             cfg.gpu_options.per_process_gpu_memory_fraction = 0.99
-
             self.session = tf.Session(config=cfg, graph=graph)
             self.saver = tf.train.Saver()
 

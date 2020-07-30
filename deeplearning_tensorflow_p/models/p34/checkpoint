@@ -1,2 +1,0 @@
-model_checkpoint_path: "conv_mnist"
-all_model_checkpoint_paths: "conv_mnist"

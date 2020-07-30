@@ -13,14 +13,16 @@ import tensorflow as tf
 from tensorflow.examples.tutorials.mnist.input_data import read_data_sets
 import p74_framework as myf
 import numpy as np
+import cv2
 
 
 class MyConfig(myf.Config):
     def __init__(self):
         super(MyConfig, self).__init__()
         self.sample_path = 'MNIST_data'
-        self.lr = 2e-5
-        self.batch_size = 100
+        self.img_path = 'imgs/{name}/test.jpg'.format(name=self.get_name())
+        self.lr = 2e-5/10
+        self.batch_size = 200
         self.keep_prob = 0.7
 
         self.vec_size = 4
@@ -76,6 +78,8 @@ class MySubTensors:
 
         with tf.variable_scope('gene'):
             x2 = self.gen(v)  # [-1, 28, 28, 1]
+            self.v = v
+            self.x2 = tf.reshape(x2, [-1, 28, 28])
 
         with tf.variable_scope('disc') as scope:
             x2_v = self.disc(x2)   # 假样本为真的概率 [-1, 1]
@@ -90,7 +94,7 @@ class MySubTensors:
 
     def disc(self, x):
         '''
-
+        判别模型
         :param x: [-1, 28, 28, 1]
         :return:
         '''
@@ -108,7 +112,7 @@ class MySubTensors:
 
     def gen(self, v):
         '''
-
+        生成模型
         :param v: [-1, 4]
         :return:
         '''
@@ -131,6 +135,18 @@ class MyAPP(myf.App):
 
     def after_batch(self, epoch, batch):
         print(epoch, '-----', batch)
+
+    def test(self, ds_test):
+        vs = np.random.normal(size=[200, self.config.vec_size])
+        ts = self.ts.sub_ts[-1]
+        imgs = self.session.run(ts.x2, {ts.v: vs})*255  # [-1, 28, 28]
+        imgs = np.reshape(imgs, [-1, 10, 28, 28])
+        imgs = np.transpose(imgs, [0, 2, 1, 3])  # [-1, 28, 10, 28]
+        imgs = np.reshape(imgs, [-1, 10, 28, 28])
+
+        myf.make_dirs(self.config.img_path)
+        cv2.imwrite(self.config.img_path, imgs)
+        print('write image into', self.config.img_path, flush=True)
 
 
 class MyTensors(myf.Tensors):

@@ -57,6 +57,14 @@ class MyConfig(myf.Config):
     def get_app(self):
         return MyApp(self)
 
+    def test(self):
+        '''
+        测试阶段不失活
+        :return:
+        '''
+        self.keep_prob = 1
+        super(MyConfig, self).test()
+
 
 class MySubTensors:
     def __init__(self, cfg: MyConfig):
