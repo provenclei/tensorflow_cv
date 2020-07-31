@@ -7,7 +7,7 @@
 @Description    :  
 @CreateTime     :  2020/7/29 15:19
 ------------------------------------
-@ModifyTime     :  条件GAN -- CGAN
+@ModifyTime     :  pix2pix   简笔画生成图片
 """
 import tensorflow as tf
 import p74_framework as myf
