@@ -7,7 +7,7 @@
 @Description    :  
 @CreateTime     :  2020/7/29 15:19
 ------------------------------------
-@ModifyTime     :  StartGAN
+@ModifyTime     :  StartGAN-WGAN
 """
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist.input_data import read_data_sets
@@ -100,10 +100,10 @@ class MySubTensors:
             scope.reuse_variables()
             x_v = self.disc(x, lx)   # 真样本为真的概率 [-1, 1]
 
-        loss1 = -tf.reduce_mean(tf.log(x_v))
-        loss2 = -tf.reduce_mean(tf.log(1 - x2_v))
-        loss3 = -tf.reduce_mean(tf.log(x2_v))
-        loss4 = -tf.reduce_mean(tf.square(x-x3))
+        loss1 = tf.reduce_mean(x_v)
+        loss2 = tf.reduce_mean(- x2_v)
+        loss3 = tf.reduce_mean(x2_v)
+        loss4 = tf.reduce_mean(tf.square(x-x3))
         self.losses = [loss1, loss2, loss3, loss4]
 
     def disc(self, x, l):
@@ -113,7 +113,7 @@ class MySubTensors:
         :return:
         '''
         x = self.encode(x, l, 1)
-        return tf.nn.sigmoid(x)
+        return x
 
     def encode(self, x, l, logits: int):
         filters = self.cfg.base_filters  # 64

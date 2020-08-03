@@ -28,6 +28,17 @@ def m3():
     yield 3
 
 
+class A:
+    def __init__(self):
+        self.a = 'a'
+
+
+class B(A):
+    def __init__(self):
+        super(A, self).__init__()
+        self.b = 'b'
+
+
 def main():
     for i in m():
         print(i)
@@ -44,4 +55,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    c = B()
+    print(c.a)
