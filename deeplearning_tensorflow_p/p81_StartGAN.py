@@ -28,6 +28,7 @@ class MyConfig(myf.Config):
         self.vec_size = 4
         self.base_filters = 16
         self._ds = None
+        self.hidden_units = 2000
 
     @property
     def ds(self):
@@ -56,6 +57,10 @@ class MyConfig(myf.Config):
     def get_tensors(self):
         return MyTensors(self)
 
+    def test(self):
+        self.keep_prob = 1.0
+        super(MyConfig, self).test()
+
 
 class MyDS:
     def __init__(self, ds, vec_size):
@@ -66,24 +71,28 @@ class MyDS:
     def next_batch(self, batch_size):
         xs, lxs = self.ds.next_batch(batch_size)
         ls = np.random.randint(0, 10, size=[batch_size])
-        return xs, lxs, ls
+        return xs, lxs, ls  # 图片，标签，随机标签,加s表示数据，而不是张量
 
 
 class MySubTensors:
     def __init__(self, cfg: MyConfig):
         self.cfg = cfg
+
         x = tf.placeholder(tf.float64, [None, 784], 'x')
         l = tf.placeholder(tf.int64, [None], 'l')
         lx = tf.placeholder(tf.int64, [None], 'lx')
+        self.x = x
+        self.l = l
         self.inputs = [x, lx, v]
-        l = tf.one_hot(l, 10, dtype=tf.float64)  # 不可训练，无需命名
-        lx = tf.one_hot(lx, 10, dtype=tf.float64)
+        l = tf.one_hot(l, 10, dtype=tf.float64)  # 不可训练，无需命名 [-1, 10]
+        lx = tf.one_hot(lx, 10, dtype=tf.float64)  # [-1, 10]
 
-
-        with tf.variable_scope('gene'):
-            x2 = self.gene(v, lx)  # [-1, 28, 28, 1]
-            self.v = v
+        x = tf.reshape(x, [-1, 28, 28, 1])
+        with tf.variable_scope('gene') as scope:
+            x2 = self.gene(x, l)  # [-1, 28, 28, 1]
             self.x2 = tf.reshape(x2, [-1, 28, 28])
+            scope.reuse_variables()
+            x3 = self.gene(x2, lx)  # [-1, 28, 28, 1]
 
         with tf.variable_scope('disc') as scope:
             x2_v = self.disc(x2, lx)   # 假样本为真的概率 [-1, 1]
@@ -94,7 +103,8 @@ class MySubTensors:
         loss1 = -tf.reduce_mean(tf.log(x_v))
         loss2 = -tf.reduce_mean(tf.log(1 - x2_v))
         loss3 = -tf.reduce_mean(tf.log(x2_v))
-        self.losses = [loss1, loss2, loss3]
+        loss4 = -tf.reduce_mean(tf.square(x, x3))
+        self.losses = [loss1, loss2, loss3, loss4]
 
     def disc(self, x, l):
         '''
@@ -110,14 +120,15 @@ class MySubTensors:
             filters *= 2   # 128, 256
             size = (size[0] // 2, size[1] // 2)
             # [-1, 14, 14, 128]   [-1, 7, 7, 258]
-            x = tf.layers.conv2d(x, filters, 3, 2, 'same',
-                                 activation=tf.nn.relu, name='conv2_%d' % i)
+            x = tf.layers.conv2d(x, filters, 3, 2, 'same',activation=tf.nn.relu, name='conv2_%d' % i)
             # 14*14*256
             t = tf.layers.dense(l, size[0] * size[1] * filters, name='dense1_%d' % i)
             # [-1, 14, 14, 128]
             t = tf.reshape(t, [-1, size[0], size[1], filters])
             x += t
+
         x = tf.layers.flatten(x)
+        x = tf.layers.dense(x, self.cfg.hidden_units)
         x = tf.nn.dropout(x, self.cfg.keep_prob)
         x = tf.layers.dense(x, 1, name='dense')  # [-1, 1]
         return tf.nn.sigmoid(x)
@@ -185,6 +196,8 @@ class MyTensors(myf.Tensors):
         grads = [[opt.compute_gradients(loss, vs) for vs, loss in zip(vars, ts.losses)] for ts in self.sub_ts]  # [gpus, losses]
         return [self.get_grads_mean(grads, i) for i in range(len(grads[0]))]
 
+    def get_loss_for_summary(self, loss):
+        return tf.sqrt(loss) if loss == self.losses[-1] else loss
 
 def main():
     MyConfig().from_cmd()
